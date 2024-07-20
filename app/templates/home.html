@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            padding: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Upload and Prediction</h1>
+
+        <h2>Prediction</h2>
+        <form id="predictionForm" enctype="multipart/form-data">
+            <label for="predictionFile">Select an image to upload:</label>
+            <input type="file" id="predictionFile" name="file" accept="image/*" required>
+            <button type="submit">Upload and Predict</button>
+        </form>
+        <div class="result" id="predictionResult"></div>
+
+        <h2>Image Echo</h2>
+        <form id="echoForm" enctype="multipart/form-data">
+            <label for="echoFile">Select an image to upload:</label>
+            <input type="file" id="echoFile" name="file" accept="image/*" required>
+            <button type="submit">Upload and Echo</button>
+        </form>
+        <div class="result" id="echoResult"></div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileField = document.getElementById('predictionFile');
+            formData.append('file', fileField.files[0]);
+
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
+            });
+
+            const resultDiv = document.getElementById('predictionResult');
+            resultDiv.innerHTML = '';
+
+            if (response.ok) {
+                const data = await response.json();
+                resultDiv.innerHTML = `<h2>Prediction Results</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } else {
+                resultDiv.innerHTML = `<h2>Error</h2><p>Failed to upload image. Status: ${response.status}</p>`;
+            }
+        });
+
+        document.getElementById('echoForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileField = document.getElementById('echoFile');
+            formData.append('file', fileField.files[0]);
+
+            const response = await fetch('/img-echo/', {
+                method: 'POST',
+                body: formData
+            });
+
+            const resultDiv = document.getElementById('echoResult');
+            resultDiv.innerHTML = '';
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                resultDiv.innerHTML = `<h2>Echoed Image</h2><img src="${url}" alt="Echoed Image" style="max-width:100%;">`;
+            } else {
+                resultDiv.innerHTML = `<h2>Error</h2><p>Failed to upload image. Status: ${response.status}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
